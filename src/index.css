@@ -1,0 +1,401 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ==========================
+   Base Styles & Variables
+   ========================== */
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --card: var(--background);
+    --card-foreground: var(--foreground);
+    --popover: var(--background);
+    --popover-foreground: var(--foreground);
+
+    /* Primary & Secondary Colors */
+    --primary: 142 70% 45%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 142 70% 95%;
+    --secondary-foreground: var(--primary);
+
+    /* Supporting Colors */
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+    --accent: 142 30% 90%;
+    --accent-foreground: var(--primary);
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: var(--border);
+    --ring: var(--primary);
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: var(--background);
+    --card-foreground: var(--foreground);
+    --popover: var(--background);
+    --popover-foreground: var(--foreground);
+    --secondary: 142 70% 20%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 142 30% 25%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: var(--muted);
+    --input: var(--muted);
+    --ring: var(--primary);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+/* ==========================
+   UI Components & Utilities
+   ========================== */
+
+/* Slider Dots */
+.slider-dot {
+  @apply w-2 h-2 rounded-full bg-gray-300 mx-1 cursor-pointer transition-all duration-300;
+}
+.slider-dot.active {
+  @apply bg-primary w-4;
+}
+
+/* Hide Scrollbar */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Responsive Category Tabs */
+@media (max-width: 640px) {
+  .category-tabs-container {
+    @apply overflow-x-auto whitespace-nowrap pb-2;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
+/* Responsive Meal Cards */
+@media (max-width: 480px) {
+  .meal-card-title {
+    font-size: 0.95rem;
+  }
+  .meal-card-description {
+    font-size: 0.8rem;
+  }
+  .meal-card-price {
+    font-size: 0.9rem;
+  }
+  .meal-card-button {
+    font-size: 0.7rem;
+    padding: 0.25rem 0.5rem;
+  }
+}
+
+/* ==========================
+   Animations
+   ========================== */
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Slider Animations */
+.slide-enter {
+  opacity: 0;
+  transform: scale(0.9);
+}
+.slide-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 500ms, transform 500ms;
+}
+.slide-exit-active {
+  opacity: 0;
+  transition: opacity 500ms;
+}
+
+/* Loading Spinner */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+/* Button Hover Effects */
+.btn-primary {
+  transition: all 0.2s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:active {
+  transform: translateY(0);
+}
+
+/* ==========================
+   Scrollbar Styles
+   ========================== */
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #a1a1a1;
+}
+
+/* ==========================
+   Responsive Text Adjustments
+   ========================== */
+
+@media (max-width: 640px) {
+  .filter-label {
+    font-size: 0.875rem;
+  }
+  .meal-title {
+    font-size: 1.1rem;
+  }
+  .meal-price {
+    font-size: 1rem;
+  }
+}
+
+/* ==========================
+   UI Enhancements
+   ========================== */
+
+/* Hover Scale */
+.hover-scale {
+  transition: transform 0.3s ease-in-out;
+}
+.hover-scale:hover {
+  transform: scale(1.03);
+}
+
+/* Header animations */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+/* Hover Effects for Navigation */
+.nav-link {
+  position: relative;
+}
+.nav-link::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  bottom: 0;
+  left: 50%;
+  background-color: var(--primary);
+  transition: all 0.3s ease;
+}
+.nav-link:hover::after {
+  width: 80%;
+  left: 10%;
+}
+
+/* Footer animations */
+.social-icon {
+  transition: all 0.3s ease;
+}
+.social-icon:hover {
+  transform: translateY(-3px);
+}
+
+/* ==========================
+   Form & UI Improvements
+   ========================== */
+
+/* Auth Form */
+.auth-form {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Payment Button */
+.payment-btn {
+  transition: all 0.2s ease;
+}
+.payment-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.payment-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+/* Animation for accordion content */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Search highlight styling */
+mark {
+  background-color: rgba(253, 224, 71, 0.6);
+  color: inherit;
+  padding: 0 1px;
+  border-radius: 2px;
+}
+
+/* Hover effect for category buttons */
+.category-button {
+  transition: all 0.2s ease;
+}
+
+.category-button:hover {
+  transform: translateY(-1px);
+}
+
+.category-button:active {
+  transform: translateY(0);
+}
+
+/* FAQ item hover effect */
+.faq-item {
+  transition: all 0.2s ease;
+}
+
+.faq-item:hover {
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Dashboard animations */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out forwards;
+}
+
+/* Sidebar animations */
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out forwards;
+}
+
+/* Line clamp utilities */
+.line-clamp-1 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .sidebar-closed {
+    transform: translateX(-100%);
+  }
+
+  .sidebar-open {
+    transform: translateX(0);
+  }
+}
+
+/* Hover effects for dashboard cards */
+.dashboard-card {
+  transition: all 0.2s ease;
+}
+
+.dashboard-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
