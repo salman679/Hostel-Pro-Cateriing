@@ -1,18 +1,12 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Swal from "sweetalert2";
-import {
-  Search,
-  X,
-  ChevronLeft,
-  ChevronRight,
-  UserPlus,
-  Users,
-  AlertTriangle,
-  Shield,
-} from "lucide-react";
+import { UserPlus, Users, AlertTriangle, Shield } from "lucide-react";
 import { useAxiosPublic } from "../../../Hooks/useAxiosPublic";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import SearchBar from "../../Sheard/SearchBar";
+import Pagination from "../../Sheard/Pagination";
+import Swal from "sweetalert2";
+import { ConfirmationModal } from "../../Sheard/ConfirmationModal";
 
 export default function ManageUsers() {
   const axiosPublic = useAxiosPublic();
@@ -36,12 +30,6 @@ export default function ManageUsers() {
     },
   });
 
-  // Handle search input change
-  const handleSearch = (e) => {
-    setSearchTerm(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
-  };
-
   // Clear search
   const clearSearch = () => {
     setSearchTerm("");
@@ -50,17 +38,15 @@ export default function ManageUsers() {
 
   // Handle making a user an admin
   const handleMakeAdmin = async (userId) => {
-    Swal.fire({
+    const makeAdminConfirmation = ConfirmationModal({
       title: "Make Admin?",
       text: "This user will have full administrative privileges",
       icon: "warning",
-      showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, make admin",
       cancelButtonText: "Cancel",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+      onConfirm: async () => {
         try {
           const response = await axiosPublic.patch(`/users/admin/${userId}`);
           if (response.data.modifiedCount > 0) {
@@ -68,7 +54,6 @@ export default function ManageUsers() {
               icon: "success",
               title: "Success!",
               text: "User has been made an admin",
-              confirmButtonColor: "#22c55e",
             });
             refetch();
           }
@@ -77,11 +62,12 @@ export default function ManageUsers() {
             icon: "error",
             title: "Error",
             text: "Failed to update user role",
-            confirmButtonColor: "#22c55e",
           });
         }
-      }
+      },
     });
+
+    makeAdminConfirmation();
   };
 
   // Pagination logic
@@ -123,28 +109,17 @@ export default function ManageUsers() {
           <h2 className="text-xl font-bold text-gray-800">Manage Users</h2>
 
           {/* Search Bar */}
-          <div className="mt-4 sm:mt-0 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchTerm}
-                onChange={handleSearch}
-                className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64"
-              />
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              {searchTerm && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
+          <div className="mt-4 sm:mt-0">
+            <SearchBar
+              placeholder="Search by name or email..."
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              onSubmit={(e) => e.preventDefault()}
+              onClearSearch={clearSearch}
+              inputClassName="w-full sm:w-64"
+              iconClassName="text-gray-400"
+              buttonClassName="text-gray-400 hover:text-gray-600"
+            />
           </div>
         </div>
 
@@ -193,6 +168,10 @@ export default function ManageUsers() {
                               }
                               alt={user.name}
                               className="h-full w-full object-cover"
+                              onError={(e) => {
+                                e.target.src =
+                                  "https://static.vecteezy.com/system/resources/previews/060/605/418/non_2x/default-avatar-profile-icon-social-media-user-free-vector.jpg";
+                              }}
                             />
                           </div>
                           <div className="ml-4">
@@ -311,42 +290,11 @@ export default function ManageUsers() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <nav className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePageChange(index + 1)}
-                      className={`px-3 py-1 rounded-md ${
-                        currentPage === index + 1
-                          ? "bg-blue-500 text-white"
-                          : "text-gray-500 hover:bg-gray-100"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </nav>
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         ) : (
           <div className="text-center py-16">

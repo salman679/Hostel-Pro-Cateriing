@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { Search, ChevronDown, ChevronUp, X } from "lucide-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
 import { Link } from "react-router-dom";
+import SearchBar from "../components/Sheard/SearchBar";
 
 export default function FAQ() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -118,11 +119,6 @@ export default function FAQ() {
     }
   };
 
-  // Clear search
-  const clearSearch = () => {
-    setSearchQuery("");
-  };
-
   // Filter FAQs based on search and category
   const filteredFAQs = faqData.filter((faq) => {
     const matchesCategory =
@@ -134,6 +130,11 @@ export default function FAQ() {
 
     return matchesCategory && matchesSearch;
   });
+
+  // Clear search
+  const clearSearch = () => {
+    setSearchQuery("");
+  };
 
   // Highlight matched text
   const highlightMatch = (text, query) => {
@@ -173,27 +174,17 @@ export default function FAQ() {
             </p>
 
             {/* Search Bar */}
-            <div className="relative max-w-xl mx-auto">
-              <input
-                type="text"
+            <div className="max-w-xl mx-auto">
+              <SearchBar
                 placeholder="Search for answers..."
-                className="w-full px-5 py-3 pl-12 pr-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                searchTerm={searchQuery}
+                onSearchChange={setSearchQuery}
+                onClearSearch={clearSearch}
+                className="rounded-full bg-white/10 backdrop-blur-sm border border-white/20"
+                inputClassName="px-5 py-3 pl-12 pr-10 text-white placeholder-gray-400 rounded-full focus:ring-green-400"
+                iconClassName="text-gray-400 left-4"
+                buttonClassName="text-gray-400 hover:text-white transition-colors right-4"
               />
-              <Search
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              )}
             </div>
           </div>
         </div>

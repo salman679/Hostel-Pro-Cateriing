@@ -66,7 +66,10 @@ export default function MealsByCategory() {
       : categories;
 
   return (
-    <section className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8" id="meals-grid">
+    <section
+      className="px-4 sm:px-6 lg:px-8 py-6 sm:py-8 container mx-auto"
+      id="meals-grid"
+    >
       <h2 className="text-2xl sm:text-3xl font-bold text-center mb-2">
         Explore Our Meals
       </h2>

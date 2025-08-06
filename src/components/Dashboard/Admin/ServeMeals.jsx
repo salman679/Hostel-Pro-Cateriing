@@ -1,17 +1,15 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Swal from "sweetalert2";
 import {
-  Search,
-  X,
-  ChevronLeft,
-  ChevronRight,
   AlertTriangle,
   Check,
   Clock,
   Ban,
 } from "lucide-react";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import SearchBar from "../../Sheard/SearchBar";
+import { showAlert } from "../../Sheard/AlertUtils";
+import Pagination from "../../Sheard/Pagination";
 
 export default function ServeMeals() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,12 +31,6 @@ export default function ServeMeals() {
     },
   });
 
-  // Handle search input change
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
-  };
-
   // Clear search
   const clearSearch = () => {
     setSearchQuery("");
@@ -53,26 +45,23 @@ export default function ServeMeals() {
       });
       if (res.data.modifiedCount > 0) {
         refetch();
-        Swal.fire({
+        showAlert({
           icon: "success",
           title: "Served!",
           text: "Meal has been served successfully.",
-          confirmButtonColor: "#22c55e",
         });
       } else {
-        Swal.fire({
+        showAlert({
           icon: "error",
           title: "Error!",
           text: "Meal could not be served.",
-          confirmButtonColor: "#22c55e",
         });
       }
     } catch (error) {
-      Swal.fire({
+      showAlert({
         icon: "error",
         title: "Error!",
         text: "An error occurred while serving the meal.",
-        confirmButtonColor: "#22c55e",
       });
       console.error("Error serving meal:", error);
     }
@@ -119,28 +108,20 @@ export default function ServeMeals() {
           <h2 className="text-xl font-bold text-gray-800">Serve Meals</h2>
 
           {/* Search Bar */}
-          <div className="mt-4 sm:mt-0 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by name or email..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-64"
-              />
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
+          <div className="mt-4 sm:mt-0">
+            <SearchBar
+              placeholder="Search by name or email..."
+              searchTerm={searchQuery}
+              onSearchChange={(value) => {
+                setSearchQuery(value);
+                setCurrentPage(1);
+              }}
+              onSubmit={(e) => e.preventDefault()}
+              onClearSearch={clearSearch}
+              inputClassName="w-full sm:w-64"
+              iconClassName="text-gray-400"
+              buttonClassName="text-gray-400 hover:text-gray-600"
+            />
           </div>
         </div>
 
@@ -318,42 +299,11 @@ export default function ServeMeals() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <nav className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePageChange(index + 1)}
-                      className={`px-3 py-1 rounded-md ${
-                        currentPage === index + 1
-                          ? "bg-green-500 text-white"
-                          : "text-gray-500 hover:bg-gray-100"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </nav>
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         ) : (
           <div className="text-center py-16">

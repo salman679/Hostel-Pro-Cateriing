@@ -181,6 +181,10 @@ export default function DashboardLayout() {
                     src={userData.image || "/placeholder.svg"}
                     alt={userData.name}
                     className="w-full h-full object-cover"
+                    onError={(e) => {
+                      e.target.src =
+                        "https://cdn.prod.website-files.com/67891024ed5394ef2059ff76/6795975173dc15b38db607d6_fallback-profile-image_1.jpg";
+                    }}
                   />
                 ) : (
                   <User size={24} className="text-gray-500" />

@@ -44,9 +44,6 @@ export default function UserProfile() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    // Here you would typically make an API call to update the user data
-    // For now, we'll just show a success message
-
     Swal.fire({
       icon: "success",
       title: "Profile Updated!",
@@ -105,6 +102,10 @@ export default function UserProfile() {
                 src={userData?.image || "https://via.placeholder.com/150"}
                 alt={userData?.name || "User"}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://cdn.prod.website-files.com/67891024ed5394ef2059ff76/6795975173dc15b38db607d6_fallback-profile-image_1.jpg";
+                }}
               />
             </div>
             <div className="mt-4 sm:mt-0 sm:ml-6">

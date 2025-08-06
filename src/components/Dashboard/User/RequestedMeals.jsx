@@ -1,23 +1,16 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Swal from "sweetalert2";
-import {
-  Heart,
-  MessageSquare,
-  AlertTriangle,
-  Search,
-  X,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Heart, MessageSquare, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../../../contexts/AuthContext";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import SearchBar from "../../Sheard/SearchBar";
+import { ConfirmationModal } from "../../Sheard/ConfirmationModal";
+import { showAlert } from "../../Sheard/AlertUtils";
 
 export default function RequestedMeals() {
   const { user, loading } = useAuth();
   const axiosSecure = useAxiosSecure();
-  const [currentPage, setCurrentPage] = useState(1);
   const [searchQuery, setSearchQuery] = useState("");
   const itemsPerPage = 10;
 
@@ -37,16 +30,14 @@ export default function RequestedMeals() {
   });
 
   const cancelMeal = (id) => {
-    Swal.fire({
+    const cancelConfirmation = ConfirmationModal({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
-      showCancelButton: true,
       confirmButtonColor: "#22c55e",
       cancelButtonColor: "#ef4444",
       confirmButtonText: "Yes, cancel it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+      onConfirm: async () => {
         try {
           const response = await axiosSecure.put(`/meals/${id}`, {
             status: "cancelled",
@@ -54,31 +45,30 @@ export default function RequestedMeals() {
           });
           if (response.data.modifiedCount > 0) {
             refetch();
-            Swal.fire({
+            showAlert({
               icon: "success",
               title: "Cancelled!",
               text: "Your request has been cancelled.",
-              confirmButtonColor: "#22c55e",
             });
           } else {
-            Swal.fire({
+            showAlert({
               icon: "error",
               title: "Error!",
               text: "Request could not be deleted.",
-              confirmButtonColor: "#22c55e",
             });
           }
         } catch (error) {
           console.error("Error deleting request:", error);
-          Swal.fire({
+          showAlert({
             icon: "error",
             title: "Error!",
             text: "An error occurred.",
-            confirmButtonColor: "#22c55e",
           });
         }
-      }
+      },
     });
+
+    cancelConfirmation();
   };
 
   // Filter meals based on search query
@@ -87,23 +77,11 @@ export default function RequestedMeals() {
   );
 
   // Pagination logic
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentRequestedMeals = filteredMeals.slice(
-    indexOfFirstItem,
-    indexOfLastItem
-  );
-  const totalPages = Math.ceil(filteredMeals.length / itemsPerPage);
-
-  // Change page
-  const handlePageChange = (pageNumber) => {
-    setCurrentPage(pageNumber);
-  };
+  const currentRequestedMeals = filteredMeals.slice(0, itemsPerPage);
 
   // Clear search
   const clearSearch = () => {
     setSearchQuery("");
-    setCurrentPage(1);
   };
 
   // Get status badge style
@@ -125,28 +103,17 @@ export default function RequestedMeals() {
           <h2 className="text-xl font-bold text-gray-800">Requested Meals</h2>
 
           {/* Search Bar */}
-          <div className="mt-4 sm:mt-0 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search meals..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-64"
-              />
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
+          <div className="mt-4 sm:mt-0">
+            <SearchBar
+              placeholder="Search meals..."
+              searchTerm={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSubmit={(e) => e.preventDefault()}
+              onClearSearch={clearSearch}
+              inputClassName="w-full sm:w-64"
+              iconClassName="text-gray-400"
+              buttonClassName="text-gray-400 hover:text-gray-600"
+            />
           </div>
         </div>
 
@@ -258,7 +225,7 @@ export default function RequestedMeals() {
 
             {/* Mobile Cards */}
             <div className="md:hidden space-y-4">
-              {currentRequestedMeals.map((meal) => (
+              {requestedMeals.map((meal) => (
                 <div
                   key={meal._id}
                   className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm"
@@ -327,49 +294,10 @@ export default function RequestedMeals() {
                 </div>
               ))}
             </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <nav className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePageChange(index + 1)}
-                      className={`px-3 py-1 rounded-md ${
-                        currentPage === index + 1
-                          ? "bg-green-500 text-white"
-                          : "text-gray-500 hover:bg-gray-100"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </nav>
-              </div>
-            )}
           </>
         ) : (
-          <div className="text-center py-16">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-yellow-100 text-yellow-600 mb-4">
-              <AlertTriangle size={24} />
-            </div>
+          <div className="text-center py-12">
+            <AlertTriangle className="mx-auto h-12 w-12 text-gray-400" />
             <h3 className="text-lg font-medium text-gray-900 mb-2">
               No requested meals found
             </h3>

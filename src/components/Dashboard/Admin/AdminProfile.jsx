@@ -46,9 +46,16 @@ export default function AdminProfile() {
           <div className="flex flex-col sm:flex-row sm:items-end -mt-12 sm:-mt-16 mb-6">
             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full border-4 border-white bg-white shadow-md overflow-hidden z-20">
               <img
-                src={user?.photoURL || "https://i.ibb.co/HBx04n5/images.jpg"}
+                src={
+                  user?.photoURL ||
+                  "https://static.vecteezy.com/system/resources/previews/060/605/418/non_2x/default-avatar-profile-icon-social-media-user-free-vector.jpg"
+                }
                 alt={user?.displayName || "Admin"}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.target.src =
+                    "https://static.vecteezy.com/system/resources/previews/060/605/418/non_2x/default-avatar-profile-icon-social-media-user-free-vector.jpg";
+                }}
               />
             </div>
             <div className="mt-4 sm:mt-0 sm:ml-6">

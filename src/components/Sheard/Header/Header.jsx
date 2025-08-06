@@ -155,6 +155,10 @@ export default function Header() {
                         src={user?.photoURL || "/placeholder.svg"}
                         alt={user.displayName || "User"}
                         className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.target.src =
+                            "https://cdn.prod.website-files.com/67891024ed5394ef2059ff76/6795975173dc15b38db607d6_fallback-profile-image_1.jpg";
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full bg-green-500 flex items-center justify-center text-white font-medium">

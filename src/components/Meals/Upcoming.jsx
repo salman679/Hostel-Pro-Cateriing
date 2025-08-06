@@ -10,13 +10,13 @@ import {
   Filter,
   ChevronDown,
   Info,
-  Search,
   Calendar,
   MessageSquare,
-  X,
   Loader2,
+  X,
 } from "lucide-react";
 import { debounce } from "lodash";
+import SearchBar from "../Sheard/SearchBar";
 
 export default function UpcomingMeals() {
   const [activeCategory, setActiveCategory] = useState("all");
@@ -220,33 +220,23 @@ export default function UpcomingMeals() {
             </p>
 
             {/* Real-time Search Bar */}
-            <div className="relative max-w-md mx-auto mb-8">
-              <input
-                type="text"
+            <div className="max-w-md mx-auto mb-8">
+              <SearchBar
                 placeholder="Search upcoming meals..."
-                className="w-full px-5 py-3 pl-12 pr-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                searchTerm={searchQuery}
+                onSearchChange={setSearchQuery}
+                onClearSearch={clearSearch}
+                className="w-full"
+                inputClassName="w-full px-5 py-4 pl-12 text-white placeholder-gray-400 border rounded-full bg-white/10 backdrop-blur-sm border-white/20 focus:outline-none focus:ring-2 focus:ring-green-400 focus:border-transparent"
+                iconClassName="text-gray-400"
+                buttonClassName="text-white transition-colors bg-green-500 rounded-full p-2 hover:bg-green-600"
               />
-              <Search
-                className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={20}
-              />
-
               {/* Show spinner when searching */}
-              {isSearching || isFetching ? (
-                <Loader2
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 animate-spin"
-                  size={20}
-                />
-              ) : searchQuery ? (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
-                >
-                  <X size={20} />
-                </button>
-              ) : null}
+              {(isSearching || isFetching) && (
+                <div className="absolute right-4 top-1/2 transform -translate-y-1/2">
+                  <Loader2 size={20} className="text-gray-400 animate-spin" />
+                </div>
+              )}
             </div>
 
             {/* Search Status */}

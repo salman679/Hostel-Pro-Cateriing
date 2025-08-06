@@ -1,17 +1,10 @@
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
-import Swal from "sweetalert2";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
   X,
-  ChevronLeft,
-  ChevronRight,
   AlertTriangle,
-  Upload,
-  ImageIcon,
-  Check,
   Plus,
   Heart,
   ArrowUpDown,
@@ -19,13 +12,17 @@ import {
 } from "lucide-react";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
 import { useAuth } from "../../../contexts/AuthContext";
+import { ConfirmationModal } from "../../Sheard/ConfirmationModal";
+import { showAlert } from "../../Sheard/AlertUtils";
+import ImageUpload from "../../Sheard/ImageUpload";
+import Pagination from "../../Sheard/Pagination";
 
 export default function UpcomingMeals() {
   const [sortBy, setSortBy] = useState("likes");
   const [showModal, setShowModal] = useState(false);
   const [imageUrl, setImageUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
+  const [setUploadProgress] = useState(0);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const axiosSecure = useAxiosSecure();
@@ -66,23 +63,20 @@ export default function UpcomingMeals() {
   };
 
   async function handlePublishMeal(meal) {
-    Swal.fire({
+    const publishConfirmation = ConfirmationModal({
       title: "Publish Meal?",
       text: "This will make the meal available to all users",
       icon: "question",
-      showCancelButton: true,
       confirmButtonColor: "#22c55e",
       cancelButtonColor: "#ef4444",
       confirmButtonText: "Yes, publish it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
+      onConfirm: () => {
         axiosSecure.post("/meals", meal).then((res) => {
           if (res.data.insertedId) {
-            Swal.fire({
+            showAlert({
               icon: "success",
               title: "Published!",
               text: "Your meal has been published.",
-              confirmButtonColor: "#22c55e",
             });
 
             axiosSecure.delete(`/upcoming-meals/${meal._id}`).then((res) => {
@@ -92,18 +86,19 @@ export default function UpcomingMeals() {
             });
           }
         });
-      }
+      },
     });
+
+    publishConfirmation();
   }
 
   // Handle form submission
   const onSubmit = async (data) => {
     if (!imageUrl) {
-      Swal.fire({
+      showAlert({
         icon: "error",
         title: "Image Required",
         text: "Please upload an image for the meal",
-        confirmButtonColor: "#22c55e",
       });
       return;
     }
@@ -124,11 +119,10 @@ export default function UpcomingMeals() {
 
       if (response.data.insertedId) {
         refetch();
-        Swal.fire({
+        showAlert({
           icon: "success",
           title: "Success!",
           text: "Upcoming meal added successfully",
-          confirmButtonColor: "#22c55e",
         });
         reset();
         setImageUrl("");
@@ -137,11 +131,10 @@ export default function UpcomingMeals() {
       }
     } catch (error) {
       console.error("Error adding meal:", error);
-      Swal.fire({
+      showAlert({
         icon: "error",
         title: "Error",
         text: "Failed to add meal. Please try again.",
-        confirmButtonColor: "#22c55e",
       });
     } finally {
       setLoading(false);
@@ -149,53 +142,52 @@ export default function UpcomingMeals() {
   };
 
   // Handle image upload to ImageBB
-  const handleImageUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
+  // const handleImageUpload = async (event) => {
+  //   const file = event.target.files[0];
+  //   if (!file) return;
 
-    const formData = new FormData();
-    formData.append("image", file);
+  //   const formData = new FormData();
+  //   formData.append("image", file);
 
-    setLoading(true);
-    setUploadProgress(10);
+  //   setLoading(true);
+  //   setUploadProgress(10);
 
-    try {
-      // Simulate progress
-      const progressInterval = setInterval(() => {
-        setUploadProgress((prev) => {
-          if (prev >= 90) {
-            clearInterval(progressInterval);
-            return prev;
-          }
-          return prev + 10;
-        });
-      }, 300);
+  //   try {
+  //     // Simulate progress
+  //     const progressInterval = setInterval(() => {
+  //       setUploadProgress((prev) => {
+  //         if (prev >= 90) {
+  //           clearInterval(progressInterval);
+  //           return prev;
+  //         }
+  //         return prev + 10;
+  //       });
+  //     }, 300);
 
-      const response = await axios.post(
-        "https://api.imgbb.com/1/upload?key=6e8387872b8e8827b2a1b18c44181ca6",
-        formData
-      );
+  //     const response = await axios.post(
+  //       "https://api.imgbb.com/1/upload?key=6e8387872b8e8827b2a1b18c44181ca6",
+  //       formData
+  //     );
 
-      clearInterval(progressInterval);
-      setUploadProgress(100);
-      setImageUrl(response.data.data.url);
+  //     clearInterval(progressInterval);
+  //     setUploadProgress(100);
+  //     setImageUrl(response.data.data.url);
 
-      setTimeout(() => {
-        setUploadProgress(0);
-      }, 1000);
-    } catch (error) {
-      console.error("Error uploading image:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Upload Failed",
-        text: "Failed to upload image. Please try again.",
-        confirmButtonColor: "#22c55e",
-      });
-      setUploadProgress(0);
-    } finally {
-      setLoading(false);
-    }
-  };
+  //     setTimeout(() => {
+  //       setUploadProgress(0);
+  //     }, 1000);
+  //   } catch (error) {
+  //     console.error("Error uploading image:", error);
+  //     showAlert({
+  //       icon: "error",
+  //       title: "Upload Failed",
+  //       text: "Failed to upload image. Please try again.",
+  //     });
+  //     setUploadProgress(0);
+  //   } finally {
+  //     setLoading(false);
+  //   }
+  // };
 
   // Filter meals based on search query
   const filteredMeals = upcomingMeals.filter(
@@ -402,42 +394,11 @@ export default function UpcomingMeals() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <nav className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePageChange(index + 1)}
-                      className={`px-3 py-1 rounded-md ${
-                        currentPage === index + 1
-                          ? "bg-green-500 text-white"
-                          : "text-gray-500 hover:bg-gray-100"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </nav>
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         ) : (
           <div className="text-center py-16">
@@ -550,85 +511,14 @@ export default function UpcomingMeals() {
 
                 {/* Image Upload */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Meal Image
-                  </label>
-                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg">
-                    <div className="space-y-1 text-center">
-                      {imageUrl ? (
-                        <div className="flex flex-col items-center">
-                          <div className="relative w-40 h-40 mb-4 rounded-lg overflow-hidden">
-                            <img
-                              src={imageUrl || "/placeholder.svg"}
-                              alt="Meal preview"
-                              className="w-full h-full object-cover"
-                            />
-                          </div>
-                          <p className="text-sm text-green-600 flex items-center">
-                            <Check size={16} className="mr-1" />
-                            Image uploaded successfully
-                          </p>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setImageUrl("");
-                              document.getElementById("image").value = "";
-                            }}
-                            className="mt-2 text-sm text-red-600 hover:text-red-800"
-                          >
-                            Remove image
-                          </button>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="flex flex-col items-center">
-                            <ImageIcon className="mx-auto h-12 w-12 text-gray-400" />
-                            <p className="mt-1 text-sm text-gray-600">
-                              <span className="font-medium text-green-600 hover:text-green-500">
-                                Upload an image
-                              </span>{" "}
-                              or drag and drop
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              PNG, JPG, GIF up to 5MB
-                            </p>
-                          </div>
-
-                          {uploadProgress > 0 && (
-                            <div className="w-full mt-2">
-                              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                                <div
-                                  className="bg-green-600 h-2.5 rounded-full transition-all duration-300"
-                                  style={{ width: `${uploadProgress}%` }}
-                                ></div>
-                              </div>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Uploading: {uploadProgress}%
-                              </p>
-                            </div>
-                          )}
-                        </>
-                      )}
-
-                      <input
-                        id="image"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleImageUpload}
-                        className="sr-only"
-                      />
-
-                      {!imageUrl && (
-                        <label
-                          htmlFor="image"
-                          className="mt-4 inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer"
-                        >
-                          <Upload size={16} className="mr-2" />
-                          Select Image
-                        </label>
-                      )}
-                    </div>
-                  </div>
+                  <ImageUpload
+                    onImageUpload={setImageUrl}
+                    uploadText="Upload an image"
+                    changeText="Change Image"
+                    requiredText="Image is required"
+                    failedText="Failed to upload image. Please try again."
+                    successText="Image uploaded successfully"
+                  />
                 </div>
 
                 {/* Ingredients and Description */}

@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Swal from "sweetalert2";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
 import {
-  Search,
   X,
   ChevronLeft,
   ChevronRight,
@@ -18,6 +16,9 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import SearchBar from "../../Sheard/SearchBar";
+import Swal from "sweetalert2";
+import { ConfirmationModal } from "../../Sheard/ConfirmationModal";
 
 export default function AllMeals() {
   const [sortBy, setSortBy] = useState("likes");
@@ -43,12 +44,6 @@ export default function AllMeals() {
 
   // React Hook Form setup
   const { register, handleSubmit, setValue, reset } = useForm();
-
-  // Handle search input change
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-    setCurrentPage(1); // Reset to first page on search
-  };
 
   // Clear search
   const clearSearch = () => {
@@ -77,7 +72,6 @@ export default function AllMeals() {
           icon: "success",
           title: "Updated!",
           text: "Your meal has been updated.",
-          confirmButtonColor: "#22c55e",
         });
         setMealToUpdate(null);
         reset();
@@ -87,7 +81,6 @@ export default function AllMeals() {
           icon: "error",
           title: "Error!",
           text: "Meal could not be updated.",
-          confirmButtonColor: "#22c55e",
         });
       }
     } catch (error) {
@@ -95,52 +88,47 @@ export default function AllMeals() {
         icon: "error",
         title: "Error!",
         text: "An error occurred while updating the meal.",
-        confirmButtonColor: "#22c55e",
       });
       console.error("Error updating meal:", error);
     }
   };
 
   const handleDelete = async (mealId) => {
-    Swal.fire({
+    const deleteConfirmation = ConfirmationModal({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#22c55e",
-      cancelButtonColor: "#ef4444",
       confirmButtonText: "Yes, delete it!",
-    }).then(async (result) => {
-      if (result.isConfirmed) {
+      cancelButtonColor: "#ef4444",
+      onConfirm: async () => {
         try {
           const res = await axiosSecure.delete(`/meals/${mealId}`);
           if (res.data.deletedCount > 0) {
-            Swal.fire({
-              icon: "success",
+            ConfirmationModal({
               title: "Deleted!",
               text: "Your meal has been deleted.",
-              confirmButtonColor: "#22c55e",
-            });
+              icon: "success",
+            })();
             refetch();
           } else {
-            Swal.fire({
-              icon: "error",
+            ConfirmationModal({
               title: "Error!",
               text: "Meal could not be deleted.",
-              confirmButtonColor: "#22c55e",
-            });
+              icon: "error",
+            })();
           }
         } catch (error) {
-          Swal.fire({
-            icon: "error",
+          ConfirmationModal({
             title: "Error!",
             text: "An error occurred while deleting the meal.",
-            confirmButtonColor: "#22c55e",
-          });
+            icon: "error",
+          })();
           console.error("Error deleting meal:", error);
         }
-      }
+      },
     });
+
+    deleteConfirmation();
   };
 
   // Filter meals based on search query
@@ -171,27 +159,18 @@ export default function AllMeals() {
           {/* Search and Sort Controls */}
           <div className="mt-4 sm:mt-0 flex flex-col sm:flex-row gap-3">
             {/* Search Bar */}
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search meals..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent w-full sm:w-64"
-              />
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
+            <SearchBar
+              placeholder="Search meals..."
+              searchTerm={searchQuery}
+              onSearchChange={(value) => {
+                setSearchQuery(value);
+                setCurrentPage(1);
+              }}
+              onSubmit={(e) => e.preventDefault()}
+              onClearSearch={clearSearch}
+              inputClassName="w-full sm:w-64"
+              iconClassName="text-gray-400"
+            />
 
             {/* Sort Controls */}
             <div className="flex space-x-2">

@@ -1,21 +1,13 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import Swal from "sweetalert2";
 import { Link } from "react-router-dom";
-import {
-  Edit,
-  Trash2,
-  Eye,
-  Save,
-  X,
-  Star,
-  Search,
-  ChevronLeft,
-  ChevronRight,
-  AlertTriangle,
-} from "lucide-react";
+import { Edit, Trash2, Eye, Save, X, Star, AlertTriangle } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import SearchBar from "../../Sheard/SearchBar";
+import { ConfirmationModal } from "../../Sheard/ConfirmationModal";
+import { showAlert } from "../../Sheard/AlertUtils";
+import Pagination from "../../Sheard/Pagination";
 
 export default function Reviews() {
   const { user } = useAuth();
@@ -79,11 +71,10 @@ export default function Reviews() {
         if (res.data.modifiedCount > 0) {
           refetch();
           setEditMode(null);
-          Swal.fire({
+          showAlert({
             icon: "success",
             title: "Updated!",
             text: "Your review has been updated.",
-            confirmButtonColor: "#22c55e",
           });
         }
       });
@@ -95,16 +86,13 @@ export default function Reviews() {
   };
 
   const deleteReview = (id) => {
-    Swal.fire({
+    const deleteConfirmation = ConfirmationModal({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#22c55e",
-      cancelButtonColor: "#ef4444",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
+      cancelButtonColor: "#ef4444",
+      onConfirm: () => {
         axiosSecure
           .delete(`/meals/${id}/reviews`, {
             params: {
@@ -114,16 +102,17 @@ export default function Reviews() {
           .then((res) => {
             if (res.data.modifiedCount > 0) {
               refetch();
-              Swal.fire({
+              showAlert({
                 icon: "success",
                 title: "Deleted!",
                 text: "Your review has been deleted.",
-                confirmButtonColor: "#22c55e",
               });
             }
           });
-      }
+      },
     });
+
+    deleteConfirmation();
   };
 
   // Render stars based on rating
@@ -146,28 +135,17 @@ export default function Reviews() {
           <h2 className="text-xl font-bold text-gray-800">My Reviews</h2>
 
           {/* Search Bar */}
-          <div className="mt-4 sm:mt-0 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search reviews..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-64"
-              />
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
+          <div className="mt-4 sm:mt-0">
+            <SearchBar
+              placeholder="Search reviews..."
+              searchTerm={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSubmit={(e) => e.preventDefault()}
+              onClearSearch={clearSearch}
+              inputClassName="w-full sm:w-64"
+              iconClassName="text-gray-400"
+              buttonClassName="text-gray-400 hover:text-gray-600"
+            />
           </div>
         </div>
 
@@ -391,42 +369,11 @@ export default function Reviews() {
               ))}
             </div>
 
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex justify-center mt-6">
-                <nav className="flex items-center space-x-1">
-                  <button
-                    onClick={() => handlePageChange(currentPage - 1)}
-                    disabled={currentPage === 1}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronLeft size={18} />
-                  </button>
-
-                  {[...Array(totalPages)].map((_, index) => (
-                    <button
-                      key={index}
-                      onClick={() => handlePageChange(index + 1)}
-                      className={`px-3 py-1 rounded-md ${
-                        currentPage === index + 1
-                          ? "bg-green-500 text-white"
-                          : "text-gray-500 hover:bg-gray-100"
-                      }`}
-                    >
-                      {index + 1}
-                    </button>
-                  ))}
-
-                  <button
-                    onClick={() => handlePageChange(currentPage + 1)}
-                    disabled={currentPage === totalPages}
-                    className="px-2 py-2 rounded-md text-gray-500 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <ChevronRight size={18} />
-                  </button>
-                </nav>
-              </div>
-            )}
+            <Pagination
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
           </>
         ) : (
           <div className="text-center py-16">

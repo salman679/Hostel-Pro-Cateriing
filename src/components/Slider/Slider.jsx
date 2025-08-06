@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Search, X, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import PropTypes from "prop-types";
+import SearchBar from "../Sheard/SearchBar";
 
 export default function Slider({ searchQuery, setSearchQuery }) {
   const [searchValue, setSearchValue] = useState(searchQuery || "");
@@ -70,38 +71,19 @@ export default function Slider({ searchQuery, setSearchQuery }) {
             </p>
 
             {/* Search Form */}
-            <form onSubmit={handleSearch} className="mb-8 max-w-md">
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Search for meals..."
-                  className="w-full px-5 py-4 pl-12 pr-10 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all"
-                  value={searchValue}
-                  onChange={(e) => setSearchValue(e.target.value)}
-                />
-                <Search
-                  className="absolute left-4 top-1/2 transform -translate-y-1/2 text-white/70"
-                  size={20}
-                />
-
-                {searchValue && (
-                  <button
-                    type="button"
-                    onClick={clearSearch}
-                    className="absolute right-14 top-1/2 transform -translate-y-1/2 text-white/70 hover:text-white transition-colors"
-                  >
-                    <X size={18} />
-                  </button>
-                )}
-
-                <button
-                  type="submit"
-                  className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-white text-green-600 p-2 rounded-lg transition-colors hover:bg-green-50"
-                >
-                  <Search size={20} />
-                </button>
-              </div>
-            </form>
+            <div className="mb-8 max-w-md">
+              <SearchBar
+                placeholder="Search for meals..."
+                searchTerm={searchValue}
+                onSearchChange={setSearchValue}
+                onSubmit={handleSearch}
+                onClearSearch={clearSearch}
+                className="w-full"
+                inputClassName="w-full px-5 py-4 pl-12 pr-10 rounded-lg bg-white/10 backdrop-blur-sm border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/30 focus:border-transparent transition-all"
+                iconClassName="text-white/70"
+                buttonClassName="text-white/70 hover:text-white transition-colors"
+              />
+            </div>
 
             {/* CTA Buttons */}
             <div className="flex flex-wrap gap-4">

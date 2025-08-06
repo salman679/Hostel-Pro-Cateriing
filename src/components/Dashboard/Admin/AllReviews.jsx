@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import axios from "axios";
 import {
-  Search,
   Star,
   ThumbsUp,
   MessageSquare,
@@ -10,7 +9,9 @@ import {
   Trash2,
   Calendar,
 } from "lucide-react";
-import Swal from "sweetalert2";
+import SearchBar from "../../Sheard/SearchBar";
+import { showAlert } from "../../Sheard/AlertUtils";
+import { ConfirmationModal } from "../../Sheard/ConfirmationModal";
 
 const AllReviews = () => {
   const [sortBy, setSortBy] = useState("likes");
@@ -62,26 +63,30 @@ const AllReviews = () => {
 
   // Handle review deletion
   const handleDelete = (reviewId) => {
-    Swal.fire({
+    const deleteConfirmation = ConfirmationModal({
       title: "Are you sure?",
       text: "You won't be able to revert this!",
       icon: "warning",
-      showCancelButton: true,
       confirmButtonColor: "#3085d6",
       cancelButtonColor: "#d33",
       confirmButtonText: "Yes, delete it!",
-    }).then((result) => {
-      if (result.isConfirmed) {
+      onConfirm: () => {
         // Here you would make the API call to delete the review
         console.log(`Delete review with ID: ${reviewId}`);
 
         // Simulate successful deletion
-        Swal.fire("Deleted!", "The review has been deleted.", "success");
+        showAlert({
+          title: "Deleted!",
+          text: "The review has been deleted.",
+          icon: "success",
+        });
 
         // Refetch the data
         refetch();
-      }
+      },
     });
+
+    deleteConfirmation();
   };
 
   // Handle view review details
@@ -214,15 +219,14 @@ const AllReviews = () => {
         <h2 className="text-2xl font-semibold text-gray-800">All Reviews</h2>
 
         <div className="mt-4 md:mt-0 flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-          <div className="relative">
-            <input
-              type="text"
+          <div className="max-w-sm">
+            <SearchBar
               placeholder="Search reviews..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 w-full sm:w-64"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              inputClassName="w-full sm:w-64"
+              iconClassName="text-gray-400"
             />
-            <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
           </div>
 
           <div className="flex gap-2">
@@ -383,6 +387,10 @@ const AllReviews = () => {
                       }
                       alt={review.user_name}
                       className="w-10 h-10 rounded-full mr-3"
+                      onError={(e) => {
+                        e.target.src =
+                          "https://static.vecteezy.com/system/resources/previews/060/605/418/non_2x/default-avatar-profile-icon-social-media-user-free-vector.jpg";
+                      }}
                     />
                     <div>
                       <h3 className="font-medium text-gray-900">

@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import Rating from "react-rating-stars-component";
 import { useAxiosPublic } from "../../Hooks/useAxiosPublic";
-import Swal from "sweetalert2";
 import { useAuth } from "../../contexts/AuthContext";
 import useUserData from "../../Hooks/useUserData";
 import useAxiosSecure from "../../Hooks/useAxiosSecure";
@@ -18,6 +16,8 @@ import {
   Info,
   MessageSquare,
 } from "lucide-react";
+import StarRating from "../Sheard/StarRating";
+import Swal from "sweetalert2";
 
 export default function MealDetail() {
   const [reviewText, setReviewText] = useState("");
@@ -30,8 +30,6 @@ export default function MealDetail() {
   const axiosPublic = useAxiosPublic();
   const axiosSecure = useAxiosSecure();
   const { user } = useAuth();
-
-  console.log(user);
 
   const {
     data: meal,
@@ -46,8 +44,32 @@ export default function MealDetail() {
     },
   });
 
+  // Check if current user has liked this meal and set initial like state
+  useEffect(() => {
+    if (meal) {
+      // Always set the like count from backend data
+      setLikeCount(meal.likes || 0);
+
+      if (user && user.email) {
+        // Check if current user has liked this meal
+        const userHasLiked =
+          meal.likedBy &&
+          Array.isArray(meal.likedBy) &&
+          meal.likedBy.includes(user.email);
+        setIsLiked(userHasLiked);
+      } else {
+        // User not logged in
+        setIsLiked(false);
+      }
+    } else {
+      // No meal data yet
+      setLikeCount(0);
+      setIsLiked(false);
+    }
+  }, [meal, user]);
+
   const handleLike = async () => {
-    if (!user) {
+    if (!user || !user.email) {
       Swal.fire({
         icon: "warning",
         title: "Login Required",
@@ -56,16 +78,38 @@ export default function MealDetail() {
       });
       return;
     }
-    try {
-      setIsLiked(!isLiked);
-      const newLikeCount = isLiked ? likeCount - 1 : likeCount + 1;
-      setLikeCount(newLikeCount);
 
-      await axiosSecure.patch(`/meals/${id}/like`, {
-        likes: newLikeCount,
+    // Check current like status from the actual meal data (not just local state)
+    const currentUserHasLiked =
+      meal?.likedBy &&
+      Array.isArray(meal.likedBy) &&
+      meal.likedBy.includes(user.email);
+
+    // Prevent multiple likes from same user
+    if (currentUserHasLiked) {
+      Swal.fire({
+        icon: "info",
+        title: "Already Liked",
+        text: "You have already liked this meal!",
+        confirmButtonColor: "#22c55e",
+        timer: 1500,
+        showConfirmButton: false,
+      });
+      return;
+    }
+
+    try {
+      // Send request to backend first (no optimistic update)
+      const response = await axiosSecure.patch(`/meals/${id}/like`, {
+        userEmail: user.email,
+        action: "like",
       });
 
-      if (!isLiked) {
+      // Check if the request was successful
+      if (response.data.success) {
+        // Refetch meal data to get updated likedBy array and like count
+        await refetch();
+
         Swal.fire({
           icon: "success",
           title: "Liked!",
@@ -74,16 +118,21 @@ export default function MealDetail() {
           timer: 1500,
           showConfirmButton: false,
         });
+      } else {
+        throw new Error("Like request failed");
       }
-    } catch {
-      // Revert UI state if request fails
-      setIsLiked(!isLiked);
-      setLikeCount(isLiked ? likeCount + 1 : likeCount - 1);
+    } catch (error) {
+      console.error("Like error:", error);
+
+      // Show appropriate error message
+      const errorMessage =
+        error.response?.data?.message ||
+        "Failed to like the meal. Please try again later.";
 
       Swal.fire({
         icon: "error",
         title: "Error",
-        text: "Failed to like the meal. Please try again later.",
+        text: errorMessage,
         confirmButtonColor: "#22c55e",
       });
     }
@@ -344,7 +393,7 @@ export default function MealDetail() {
 
               <div className="flex items-center mb-4">
                 <div className="flex items-center">
-                  <Rating
+                  <StarRating
                     count={5}
                     size={20}
                     value={Number(meal.rating.toFixed(1)) || 0}
@@ -839,16 +888,16 @@ export default function MealDetail() {
                     Write a Review
                   </h3>
 
+                  {/* Rating Input */}
                   <div className="mb-4">
-                    <label className="block text-gray-700 text-sm font-medium mb-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Your Rating
                     </label>
-                    <Rating
-                      count={5}
-                      size={30}
-                      value={rating}
-                      onChange={(newRating) => setRating(newRating)}
-                      activeColor="#ffd700"
+                    <StarRating
+                      rating={rating}
+                      setRating={setRating}
+                      size={24}
+                      edit={true}
                     />
                   </div>
 
@@ -900,12 +949,10 @@ export default function MealDetail() {
                             </h4>
                             {review.rating && (
                               <div className="flex items-center mt-1">
-                                <Rating
-                                  count={5}
+                                <StarRating
+                                  rating={review.rating}
                                   size={16}
-                                  value={Number(review.rating) || 0}
                                   edit={false}
-                                  activeColor="#ffd700"
                                 />
                               </div>
                             )}

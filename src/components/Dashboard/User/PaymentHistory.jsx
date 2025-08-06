@@ -3,14 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import {
   Calendar,
   Download,
-  Search,
-  X,
   ChevronLeft,
   ChevronRight,
   AlertTriangle,
 } from "lucide-react";
 import { useAuth } from "../../../contexts/AuthContext";
 import useAxiosSecure from "../../../Hooks/useAxiosSecure";
+import SearchBar from "../../Sheard/SearchBar";
 
 export default function PaymentHistory() {
   const { user } = useAuth();
@@ -72,28 +71,17 @@ export default function PaymentHistory() {
           <h2 className="text-xl font-bold text-gray-800">Payment History</h2>
 
           {/* Search Bar */}
-          <div className="mt-4 sm:mt-0 relative">
-            <div className="relative">
-              <input
-                type="text"
-                placeholder="Search by plan or transaction ID..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent w-full sm:w-64"
-              />
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"
-                size={18}
-              />
-              {searchQuery && (
-                <button
-                  onClick={clearSearch}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
-                >
-                  <X size={18} />
-                </button>
-              )}
-            </div>
+          <div className="mt-4 sm:mt-0">
+            <SearchBar
+              placeholder="Search by plan or transaction ID..."
+              searchTerm={searchQuery}
+              onSearchChange={setSearchQuery}
+              onSubmit={(e) => e.preventDefault()}
+              onClearSearch={clearSearch}
+              inputClassName="w-full sm:w-64"
+              iconClassName="text-gray-400"
+              buttonClassName="text-gray-400 hover:text-gray-600"
+            />
           </div>
         </div>
 
